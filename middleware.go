@@ -10,12 +10,12 @@ import (
 )
 
 var (
-	dflBuckets = []float64{300, 1200, 5000}
+	dflBuckets = []float64{300, 1200, 5000, 7000, 10000}
 )
 
 const (
-	reqsName    = "chi_requests_total"
-	latencyName = "chi_request_duration_milliseconds"
+	reqsName    = "http_requests_total"
+	latencyName = "http_request_duration_milliseconds"
 )
 
 // Middleware is a handler that exposes prometheus metrics for the number of requests,
@@ -58,8 +58,8 @@ func (c Middleware) handler(next http.Handler) http.Handler {
 		start := time.Now()
 		ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 		next.ServeHTTP(ww, r)
-		c.reqs.WithLabelValues(http.StatusText(ww.Status()), r.Method, r.URL.Path).Inc()
-		c.latency.WithLabelValues(http.StatusText(ww.Status()), r.Method, r.URL.Path).Observe(float64(time.Since(start).Nanoseconds()) / 1000000)
+		c.reqs.WithLabelValues(http.StatusCode(ww.Status()), r.Method, r.URL.Path).Inc()
+		c.latency.WithLabelValues(http.StatusCode(ww.Status()), r.Method, r.URL.Path).Observe(float64(time.Since(start).Nanoseconds()) / 1000000)
 	}
 	return http.HandlerFunc(fn)
 }
