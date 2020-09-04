@@ -3,6 +3,7 @@ package chiprometheus
 
 import (
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/go-chi/chi/middleware"
@@ -58,8 +59,8 @@ func (c Middleware) handler(next http.Handler) http.Handler {
 		start := time.Now()
 		ww := middleware.NewWrapResponseWriter(w, r.ProtoMajor)
 		next.ServeHTTP(ww, r)
-		c.reqs.WithLabelValues(ww.Status(), r.Method, r.URL.Path).Inc()
-		c.latency.WithLabelValues(ww.Status(), r.Method, r.URL.Path).Observe(float64(time.Since(start).Nanoseconds()) / 1000000)
+		c.reqs.WithLabelValues(strconv.Itoa(ww.Status()), r.Method, r.URL.Path).Inc()
+		c.latency.WithLabelValues(strconv.Itoa(ww.Status()), r.Method, r.URL.Path).Observe(float64(time.Since(start).Nanoseconds()) / 1000000)
 	}
 	return http.HandlerFunc(fn)
 }
